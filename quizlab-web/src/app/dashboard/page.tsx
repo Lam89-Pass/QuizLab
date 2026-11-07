@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Logo, Mascot } from "@/components/ui";
+import { AIGeneratorModal } from "@/components/AIGeneratorModal";
 import { useQuizzes, useUser } from "@/lib/store";
 
 const TONES = ["bg-sun", "bg-sky", "bg-pink", "bg-mint"];
@@ -11,6 +12,7 @@ export default function Dashboard() {
     const router = useRouter();
     const { user, ready: userReady, logout } = useUser();
     const { quizzes, ready, error, remove } = useQuizzes();
+    const [showAIModal, setShowAIModal] = useState(false);
 
     useEffect(() => {
         if (userReady && !user) router.replace("/login");
@@ -54,10 +56,27 @@ export default function Dashboard() {
                     </h1>
                     <p className="mt-1 font-medium text-ink/70">{quizzes.length} kuis siap dimainkan</p>
                 </div>
-                <Link href="/dashboard/quiz/new" className="pop-btn bg-grape text-white">
-                    ➕ Create New Quiz
-                </Link>
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link href="/dashboard/quiz/new" className="pop-btn bg-white">
+                        ✏️ Bikin Manual
+                    </Link>
+                    <button
+                        onClick={() => setShowAIModal(true)}
+                        className="pop-btn bg-grape text-white"
+                    >
+                        ✨ Generate Pakai AI
+                    </button>
+                </div>
             </div>
+
+            <AIGeneratorModal
+                isOpen={showAIModal}
+                onClose={() => setShowAIModal(false)}
+                onSuccess={(aiData) => {
+                    sessionStorage.setItem("quizlab_ai_draft", JSON.stringify(aiData));
+                    router.push("/dashboard/quiz/new");
+                }}
+            />
 
             {error && <p className="mb-4 font-bold text-tomato">{error}</p>}
 

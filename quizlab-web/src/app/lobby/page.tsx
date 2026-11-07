@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { Logo } from "@/components/ui";
 import { api } from "@/lib/store";
@@ -17,6 +18,7 @@ type Info = {
 };
 
 export default function Lobby() {
+    const router = useRouter();
     const [code, setCode] = useState("");
     const [origin, setOrigin] = useState("");
     const [me, setMe] = useState("");
@@ -39,7 +41,13 @@ export default function Lobby() {
         async function tick() {
             try {
                 const s = await api<Info>(`/api/sessions/${code}`);
-                if (!stop) { setInfo(s); setErr(""); }
+                if (!stop) {
+                    setInfo(s);
+                    setErr("");
+                    if (s.status === "playing") {
+                        router.replace(`/play?code=${code}`);
+                    }
+                }
             } catch (e) {
                 if (!stop) setErr((e as Error).message);
             }
@@ -47,7 +55,7 @@ export default function Lobby() {
         tick();
         const t = setInterval(tick, 2000);
         return () => { stop = true; clearInterval(t); };
-    }, [code]);
+    }, [code, router]);
 
     if (err && !info) {
         return (

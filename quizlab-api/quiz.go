@@ -12,12 +12,14 @@ import (
 )
 
 type QuestionDTO struct {
-	ID       string   `json:"id"`
-	Text     string   `json:"text"`
-	Type     string   `json:"type"` // "mc" | "tf"
-	Options  []string `json:"options"`
-	Correct  int      `json:"correct"`
-	Duration int      `json:"duration"`
+	ID          string   `json:"id"`
+	Text        string   `json:"text"`
+	Type        string   `json:"type"`
+	Options     []string `json:"options"`
+	Correct     int      `json:"correct"`
+	Duration    int      `json:"duration"`
+	ImageURL    string   `json:"imageUrl"`
+	Explanation string   `json:"explanation"`
 }
 
 type QuizDTO struct {
@@ -28,7 +30,6 @@ type QuizDTO struct {
 	UpdatedAt   int64         `json:"updatedAt"`
 }
 
-// validate merapikan input dan mengembalikan pesan error ("" kalau valid).
 func (q *QuizDTO) validate() string {
 	q.Title = strings.TrimSpace(q.Title)
 	q.Description = strings.TrimSpace(q.Description)
@@ -78,9 +79,9 @@ func insertQuestions(ctx context.Context, tx pgx.Tx, quizID string, qs []Questio
 	for i, q := range qs {
 		var qid string
 		err := tx.QueryRow(ctx, `
-			INSERT INTO questions (quiz_id, question_text, qtype, duration, order_number)
-			VALUES ($1::uuid, $2, $3, $4, $5) RETURNING id::text`,
-			quizID, q.Text, q.Type, q.Duration, i).Scan(&qid)
+			INSERT INTO questions (quiz_id, question_text, qtype, duration, image_url, explanation, order_number)
+			VALUES ($1::uuid, $2, $3, $4, $5, $6, $7) RETURNING id::text`,
+			quizID, q.Text, q.Type, q.Duration, strings.TrimSpace(q.ImageURL), strings.TrimSpace(q.Explanation), i).Scan(&qid)
 		if err != nil {
 			return err
 		}
@@ -96,7 +97,6 @@ func insertQuestions(ctx context.Context, tx pgx.Tx, quizID string, qs []Questio
 	return nil
 }
 
-// loadQuiz mengambil satu kuis lengkap milik userID.
 func (a *App) loadQuiz(ctx context.Context, quizID, userID string) (*QuizDTO, error) {
 	q := &QuizDTO{Questions: []QuestionDTO{}}
 	var updated time.Time
@@ -110,7 +110,8 @@ func (a *App) loadQuiz(ctx context.Context, quizID, userID string) (*QuizDTO, er
 	q.UpdatedAt = updated.UnixMilli()
 
 	rows, err := a.db.Query(ctx, `
-		SELECT q.id::text, q.question_text, q.qtype, q.duration, a.answer_text, a.is_correct
+		SELECT q.id::text, q.question_text, q.qtype, q.duration, q.image_url, q.explanation,
+		       a.answer_text, a.is_correct
 		FROM questions q
 		JOIN answers a ON a.question_id = q.id
 		WHERE q.quiz_id = $1::uuid
@@ -122,16 +123,17 @@ func (a *App) loadQuiz(ctx context.Context, quizID, userID string) (*QuizDTO, er
 
 	index := map[string]int{}
 	for rows.Next() {
-		var qid, text, qtype, atext string
+		var qid, text, qtype, img, expl, atext string
 		var dur int
 		var correct bool
-		if err := rows.Scan(&qid, &text, &qtype, &dur, &atext, &correct); err != nil {
+		if err := rows.Scan(&qid, &text, &qtype, &dur, &img, &expl, &atext, &correct); err != nil {
 			return nil, err
 		}
 		i, ok := index[qid]
 		if !ok {
 			q.Questions = append(q.Questions, QuestionDTO{
-				ID: qid, Text: text, Type: qtype, Duration: dur, Options: []string{},
+				ID: qid, Text: text, Type: qtype, Duration: dur,
+				ImageURL: img, Explanation: expl, Options: []string{},
 			})
 			i = len(q.Questions) - 1
 			index[qid] = i
@@ -244,7 +246,6 @@ func (a *App) createQuiz(c *gin.Context) {
 	c.JSON(201, out)
 }
 
-// updateQuiz mengganti seluruh isi kuis (judul, deskripsi, semua soal).
 func (a *App) updateQuiz(c *gin.Context) {
 	id := c.Param("id")
 	if !validUUID(id) {

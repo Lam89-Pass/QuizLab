@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS questions (
   question_text TEXT NOT NULL,
   qtype TEXT NOT NULL DEFAULT 'mc' CHECK (qtype IN ('mc', 'tf')),
   duration INT NOT NULL DEFAULT 10 CHECK (duration BETWEEN 5 AND 120),
+  image_url TEXT NOT NULL DEFAULT '',
+  explanation TEXT NOT NULL DEFAULT '',
   order_number INT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS questions_quiz_idx ON questions(quiz_id);
@@ -44,6 +46,10 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   host_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   game_code TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'playing', 'finished')),
+  current_question INT NOT NULL DEFAULT 0,
+  current_phase TEXT NOT NULL DEFAULT 'lobby',
+  is_paused BOOLEAN NOT NULL DEFAULT false,
+  question_started_at TIMESTAMPTZ,
   started_at TIMESTAMPTZ,
   ended_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -58,6 +64,8 @@ CREATE TABLE IF NOT EXISTS participants (
   nickname TEXT NOT NULL,
   token TEXT NOT NULL,
   total_score INT NOT NULL DEFAULT 0,
+  streak INT NOT NULL DEFAULT 0,
+  max_streak INT NOT NULL DEFAULT 0,
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- nama unik per sesi, tanpa membedakan huruf besar/kecil

@@ -1,0 +1,28 @@
+# Environment files
+.env
+.env.*
+*.env
+!.env.example
+
+# Binaries & build artifacts
+quizlab-api/quizlab-api
+*.exe
+*.test
+*.out
+
+# Cookies & Credentials
+cookies.txt
+*.key
+*.pem
+
+# Next.js & Node
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+.DS_Store
+Thumbs.db

@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// uid mengambil id user yang sudah login (diisi oleh middleware requireAuth).
 func uid(c *gin.Context) string { return c.GetString("uid") }
 
 func serverError(c *gin.Context, err error) {

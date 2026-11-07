@@ -20,7 +20,6 @@ export default function JoinPage() {
         if (!name.trim()) return setErr("Nama panggilan wajib diisi dong 😅");
         setBusy(true);
         try {
-            // kirim token lama (kalau ada) supaya bisa masuk kembali dengan nama yang sama
             let token = "";
             try {
                 token = JSON.parse(sessionStorage.getItem(`quizlab:${code}`) ?? "{}").token ?? "";

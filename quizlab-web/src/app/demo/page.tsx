@@ -60,13 +60,11 @@ export default function Demo() {
         }
     }
 
-    // timer (di aplikasi asli: waktu berasal dari server via WebSocket)
     useEffect(() => {
         if (phase !== "question") return;
         if (left <= 0) { reveal(); return; }
         const t = setTimeout(() => setLeft((l) => l - 1), 1000);
         return () => clearTimeout(t);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase, left]);
 
     useEffect(() => {
@@ -74,7 +72,6 @@ export default function Demo() {
             confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 } });
             play("win.mp3");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase]);
 
     function next() {
@@ -91,7 +88,6 @@ export default function Demo() {
         a.click();
     }
 
-    /* ============ FINAL ============ */
     if (phase === "final") {
         return (
             <main className="mx-auto max-w-xl space-y-6 px-5 py-8">
@@ -108,7 +104,6 @@ export default function Demo() {
         );
     }
 
-    /* ============ LEADERBOARD ============ */
     if (phase === "board") {
         return (
             <main className="mx-auto max-w-xl space-y-6 px-5 py-8">
@@ -123,7 +118,6 @@ export default function Demo() {
         );
     }
 
-    /* ============ QUESTION + REVEAL ============ */
     const urgent = left <= 3 && phase === "question";
     return (
         <main className="mx-auto max-w-3xl space-y-5 px-5 py-6">
@@ -136,7 +130,6 @@ export default function Demo() {
                 </button>
             </div>
 
-            {/* Timer */}
             <div className="flex items-center gap-3">
                 <div className="h-6 flex-1 overflow-hidden rounded-full border-[3px] border-ink bg-white">
                     <div
@@ -200,12 +193,9 @@ export default function Demo() {
                 </div>
             )}
 
-            {/* Efek jawaban salah: zoom-in kecil -> besar */}
             {phase === "reveal" && picked !== null && !isCorrect && (
                 <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-ink/60 p-4">
                     <div className="pop-card animate-zoomfx max-w-sm p-4 text-center">
-                        {/* Ganti emoji ini dengan video aset platform:
-                <video src="/wrong.mp4" autoPlay muted playsInline className="rounded-xl" /> */}
                         <div className="text-9xl">🤡</div>
                         <p className="font-display text-3xl font-extrabold">SALAH WOI!</p>
                     </div>

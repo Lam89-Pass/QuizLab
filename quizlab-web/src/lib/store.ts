@@ -9,6 +9,8 @@ export type Question = {
     options: string[];
     correct: number;
     duration: number;
+    imageUrl?: string;
+    explanation?: string;
 };
 export type Quiz = {
     id: string;
@@ -42,10 +44,11 @@ export function newQuestion(type: QType): Question {
         options: type === "tf" ? ["Benar", "Salah"] : ["", "", "", ""],
         correct: 0,
         duration: 10,
+        imageUrl: "",
+        explanation: "",
     };
 }
 
-// Pemanggil API. Error dari backend ({"error": "..."}) dilempar sebagai Error.
 export async function api<T = unknown>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
         ...init,
@@ -61,7 +64,6 @@ export async function api<T = unknown>(url: string, init?: RequestInit): Promise
     return res.status === 204 ? (undefined as T) : res.json();
 }
 
-// Daftar kuis milik host (ringkas, tanpa isi soal)
 export function useQuizzes() {
     const [quizzes, setQuizzes] = useState<QuizSummary[]>([]);
     const [ready, setReady] = useState(false);

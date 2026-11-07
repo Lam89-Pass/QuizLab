@@ -35,7 +35,6 @@ func main() {
 	api := r.Group("/api")
 	api.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
 
-	// auth
 	api.GET("/auth/login/:provider", app.oauthLogin)
 	api.GET("/auth/callback/:provider", app.oauthCallback)
 	api.POST("/auth/logout", app.logout)
@@ -44,19 +43,23 @@ func main() {
 		api.POST("/auth/dev-login", app.devLogin)
 	}
 
-	// khusus host (wajib login)
 	authed := api.Group("", app.requireAuth)
 	authed.GET("/me", app.me)
 	authed.GET("/quizzes", app.listQuizzes)
 	authed.POST("/quizzes", app.createQuiz)
+	authed.POST("/ai/generate", app.generateAIQuiz)
+	authed.POST("/ai/generate-from-file", app.generateAIQuizFromFile)
 	authed.GET("/quizzes/:id", app.getQuiz)
 	authed.PUT("/quizzes/:id", app.updateQuiz)
 	authed.DELETE("/quizzes/:id", app.deleteQuiz)
 	authed.POST("/quizzes/:id/sessions", app.createSession)
+	authed.PATCH("/sessions/:code/status", app.updateSessionStatus)
+	authed.PATCH("/sessions/:code/state", app.updateGameState)
 
-	// publik (peserta tanpa login)
 	api.GET("/sessions/:code", app.getSession)
+	api.GET("/sessions/:code/state", app.getGameState)
 	api.POST("/sessions/:code/join", app.joinSession)
+	api.POST("/sessions/:code/answer", app.submitAnswer)
 
 	log.Printf("QuizLab API jalan di :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

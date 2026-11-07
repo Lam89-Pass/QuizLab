@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Logo, Mascot } from "@/components/ui";
+import { useUser } from "@/lib/store";
 
 const STEPS = [
   { e: "✍️", t: "Bikin kuis", d: "Login, tulis pertanyaan, atur timer. Gampang, nggak pakai drama.", c: "bg-sun" },
@@ -12,7 +13,9 @@ const STEPS = [
 
 export default function Home() {
   const router = useRouter();
+  const { user, ready, logout } = useUser();
   const [code, setCode] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
 
   function join(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +28,71 @@ export default function Home() {
         <Logo />
         <nav className="flex items-center gap-3">
           <a href="#cara-main" className="hidden font-bold sm:block">Cara main</a>
-          <Link href="/login" className="pop-btn bg-white">Login</Link>        </nav>
+
+          {/* Jika belum login: tombol Login */}
+          {ready && !user && (
+            <Link href="/login" className="pop-btn bg-white">Login</Link>
+          )}
+
+          {/* Jika sudah login: avatar + dropdown profil */}
+          {ready && user && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu((v) => !v)}
+                className="flex items-center gap-2 rounded-full border-[3px] border-ink bg-white px-3 py-1.5 font-extrabold shadow-[3px_3px_0_#1b1530] hover:bg-cream transition-colors"
+              >
+                {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-7 w-7 rounded-full border-[2px] border-ink object-cover"
+                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                  />
+                ) : (
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-grape text-sm font-extrabold text-white">
+                    {user.name[0]?.toUpperCase()}
+                  </span>
+                )}
+                <span className="hidden max-w-[120px] truncate sm:block">{user.name}</span>
+                <span className="text-xs text-ink/60">{showMenu ? "▲" : "▼"}</span>
+              </button>
+
+              {showMenu && (
+                <>
+                  {/* Overlay untuk tutup menu */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full z-20 mt-2 w-52 rounded-2xl border-[3px] border-ink bg-white shadow-[4px_4px_0_#1b1530]">
+                    <div className="border-b-[3px] border-ink/20 px-4 py-3">
+                      <p className="font-extrabold truncate">{user.name}</p>
+                      {user.email && (
+                        <p className="text-xs font-bold text-ink/50 truncate">{user.email}</p>
+                      )}
+                    </div>
+                    <div className="p-2 space-y-1">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setShowMenu(false)}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 font-bold hover:bg-cream transition-colors"
+                      >
+                        📋 Dashboard
+                      </Link>
+                      <button
+                        onClick={async () => { setShowMenu(false); await logout(); }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 font-bold text-tomato hover:bg-tomato/10 transition-colors"
+                      >
+                        🚪 Logout
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </nav>
       </header>
 
       <section className="grid items-center gap-10 py-10 lg:grid-cols-2">
@@ -53,7 +120,8 @@ export default function Home() {
           </form>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/dashboard" className="pop-btn bg-sun">✨ Create Quiz</Link>            <Link href="/demo" className="pop-btn bg-white">▶ Coba demo</Link>
+            <Link href="/dashboard" className="pop-btn bg-sun">✨ Create Quiz</Link>
+            <Link href="/demo" className="pop-btn bg-white">▶ Coba demo</Link>
           </div>
         </div>
 

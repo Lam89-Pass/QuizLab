@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quizlab
+      POSTGRES_PASSWORD: quizlab
+      POSTGRES_DB: quizlab
+    ports:
+      - "5433:5432"
+    volumes:
+      - quizlab-data:/var/lib/postgresql/data
+
+volumes:
+  quizlab-data:

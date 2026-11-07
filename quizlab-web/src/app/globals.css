@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1b1530;
+  --color-cream: #fff7e6;
+  --color-sun: #ffd23f;
+  --color-pink: #ff6b9d;
+  --color-mint: #3ddc97;
+  --color-grape: #8b5cf6;
+  --color-sky: #4cc9f0;
+  --color-tomato: #ff5a4f;
+
+  --animate-bob: bob 3s ease-in-out infinite;
+  --animate-blink: blink 4s infinite;
+  --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-wiggle: wiggle 0.6s ease-in-out infinite;
+  --animate-zoomfx: zoomfx 2.4s ease-out forwards;
+
+  @keyframes bob {
+
+    0%,
+    100% {
+      transform: translateY(0) rotate(-2deg);
+    }
+
+    50% {
+      transform: translateY(-10px) rotate(2deg);
+    }
+  }
+
+  @keyframes blink {
+
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+
+    96% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(0.3) rotate(-6deg);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1) rotate(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes wiggle {
+
+    0%,
+    100% {
+      transform: rotate(-4deg);
+    }
+
+    50% {
+      transform: rotate(4deg);
+    }
+  }
+
+  /* zoom-in kecil -> besar untuk jawaban salah */
+  @keyframes zoomfx {
+    0% {
+      transform: scale(0.05);
+      opacity: 0;
+    }
+
+    25% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    85% {
+      transform: scale(1.05);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui;
+  --font-sans: var(--font-dmsans), ui-sans-serif, system-ui;
+}
+
+body {
+  background-color: #fff7e6;
+  background-image: radial-gradient(#1b153022 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  color: #1b1530;
+}
+
+@layer components {
+  .pop-card {
+    background: #fff;
+    border: 3px solid #1b1530;
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 #1b1530;
+  }
+
+  .pop-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 3px solid #1b1530;
+    border-radius: 14px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 800;
+    box-shadow: 4px 4px 0 #1b1530;
+    transition: transform 0.12s, box-shadow 0.12s;
+    cursor: pointer;
+  }
+
+  .pop-btn:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 #1b1530;
+  }
+
+  .pop-btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 #1b1530;
+  }
+
+  .pop-btn:disabled {
+    cursor: default;
+  }
+
+  .pop-input {
+    width: 100%;
+    border: 3px solid #1b1530;
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    font-weight: 800;
+    background: #fff;
+    box-shadow: 4px 4px 0 #1b1530;
+    outline: none;
+  }
+
+  .pop-input:focus {
+    box-shadow: 6px 6px 0 #8b5cf6;
+  }
+
+  .hl {
+    background: linear-gradient(transparent 55%, #ff6b9d 55%);
+    padding: 0 0.15em;
+  }
+}

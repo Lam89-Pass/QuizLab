@@ -11,6 +11,8 @@ require (
 	golang.org/x/oauth2 v0.37.0
 )
 
+require github.com/gorilla/websocket v1.5.3
+
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
@@ -45,5 +47,5 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirectx
+	google.golang.org/protobuf v1.36.10 // indirect; indirectx
 )

@@ -51,6 +51,22 @@ func (a *App) createSession(c *gin.Context) {
 		return
 	}
 
+	// pakai ulang sesi "waiting" yang masih baru, supaya refresh halaman host tidak mengganti kode
+	var existingID, existingCode string
+	err = a.db.QueryRow(ctx, `
+		SELECT id::text, game_code FROM game_sessions
+		WHERE quiz_id = $1::uuid AND host_id = $2::uuid AND status = 'waiting'
+		  AND created_at > now() - interval '2 hours'
+		ORDER BY created_at DESC LIMIT 1`, quizID, uid(c)).Scan(&existingID, &existingCode)
+	if err == nil {
+		c.JSON(200, gin.H{"id": existingID, "code": existingCode, "status": "waiting"})
+		return
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		serverError(c, err)
+		return
+	}
+
 	// kode bentrok sangat jarang terjadi, tapi tetap dicoba ulang beberapa kali
 	for attempt := 0; attempt < 5; attempt++ {
 		code := makeCode()

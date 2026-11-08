@@ -14,6 +14,7 @@ type App struct {
 	cfg   Config
 	db    *pgxpool.Pool
 	oauth map[string]*oauth2.Config
+	hub   *Hub
 }
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	app := &App{cfg: cfg, db: pool}
+	app := &App{cfg: cfg, db: pool, hub: newHub()}
 	app.initOAuth()
 
 	r := gin.Default()
@@ -35,6 +36,7 @@ func main() {
 	api := r.Group("/api")
 	api.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
 
+	// auth
 	api.GET("/auth/login/:provider", app.oauthLogin)
 	api.GET("/auth/callback/:provider", app.oauthCallback)
 	api.POST("/auth/logout", app.logout)
@@ -43,6 +45,7 @@ func main() {
 		api.POST("/auth/dev-login", app.devLogin)
 	}
 
+	// khusus host (wajib login)
 	authed := api.Group("", app.requireAuth)
 	authed.GET("/me", app.me)
 	authed.GET("/quizzes", app.listQuizzes)
@@ -55,11 +58,16 @@ func main() {
 	authed.POST("/quizzes/:id/sessions", app.createSession)
 	authed.PATCH("/sessions/:code/status", app.updateSessionStatus)
 	authed.PATCH("/sessions/:code/state", app.updateGameState)
+	authed.POST("/sessions/:code/host-ticket", app.hostTicket) // tiket WebSocket host
 
+	// publik (peserta tanpa login)
 	api.GET("/sessions/:code", app.getSession)
 	api.GET("/sessions/:code/state", app.getGameState)
 	api.POST("/sessions/:code/join", app.joinSession)
 	api.POST("/sessions/:code/answer", app.submitAnswer)
+
+	// WebSocket (langsung ke server Go, tidak lewat rewrite Vercel)
+	r.GET("/ws", app.wsHandler)
 
 	log.Printf("QuizLab API jalan di :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
